@@ -24,6 +24,48 @@
 /*		.counties path:hover {
 		  fill: Steelblue;
 		}*/
+		.loader{
+			display: none;
+		}
+
+		.arc text {
+		  font: 10px sans-serif;
+		  text-anchor: middle;
+		}
+
+		.arc path {
+		  stroke: #fff;
+		}
+
+		.widget {
+		  display: inline-block;
+		  border: 1px solid #AAA;
+		  background: white;
+		}
+
+		#chart {
+		  height: 400px;
+		  width: 500px;
+		}
+
+
+
+		.bar {
+		  fill: #A18FDB;
+		}
+
+		.value {
+		  font-size: 16px;
+		  font-weight: 300;
+		  fill: #333;
+		}
+
+		.label {
+		  font-size: 18px;
+		  fill: #333;
+		}
+
+
 		</style>
 	</head>
 
@@ -95,10 +137,25 @@
 	<div >
 		<svg id="usMap" width="960" height="600"></svg>
 	</div>
-	<p id="totalPop">Total Population</p>
-	<p id="medianIncome">Median house hold income</p>
-	<p id="capitaIncome">Per Capita Income</p>
+	<div>
+		<svg id="countyDonutSvg"></svg>
+	</div>
 
+	<div>
+		<svg id="countyMedianAgeBarSvg"></svg>
+	</div>
+	<div class="widget">
+		<h1>My chart</h1>
+		<div id="chart"></div>  
+		<svg id="countyMedianAgeBarSvg"></svg>
+	</div>
+
+	<div >
+		<img id="loader" src="resources/spinner.gif" alt="Loading..." style="display:none;" >
+		<p id="totalPop">Total Population</p>
+		<p id="medianIncome">Median house hold income</p>
+		<p id="capitaIncome">Per Capita Income</p>
+	</div>
 	<script type="text/javascript">
 	var KEY = "3caf0eab5ae9ccdd22d3119e6dda1bc77d8e8aa2";
 	var APIURL = "http://api.census.gov/data/2015/acs1?get=NAME,B01001_024E&for=county:*&key=" + KEY;
@@ -111,6 +168,7 @@
 	var countyData;
 
 	function getJsonFromURL(){
+		var dataArray = [];
 		d3.json("data/states.json", function(statesJson){
 		//console.log(statesJson);
 		statesJSON = statesJson;
@@ -131,12 +189,13 @@
 						{
 							countyData = APIData[j][1];
 							countiesJSON.features[i].properties.pp = APIData[j][1];	
+							dataArray.push(APIData[j][1]);
 						}
 					} //i for ends
 				}//J for ends
 				console.log(countiesJSON);
 				
-				drawMap(statesJSON, countiesJSON);
+				drawMap(statesJSON, countiesJSON, dataArray);
 				//return countiesJSON;
 			}); //APIURL ends
 		}); // counties d3.json ends	
@@ -144,16 +203,19 @@
 	}
 
 	
-	function drawMap(statesJSON, countiesJSON){
-	//console.log(countiesJSON);
+	function drawMap(statesJSON, countiesJSON, dataArray){
 
+		//console.log(dataArray);
 		d3.select("#usMap").selectAll('g').remove();	
 		var color = d3.scale.log()
 	    .range(["hsl(62,100%,90%)", "hsl(228,30%,20%)"])
 	    .interpolate(d3.interpolateHcl);
+	    var min = d3.min(dataArray);
+	    var max = d3.max(dataArray);
+	   // console.log(min, max);
 
 		var color = d3.scale.linear()
-	    .domain([65000, 1212120]) //min, max
+	    .domain([min, max]) //min, max
 	    .range(["#2ed16f", "#24b55e", "#1d9b50", "#167f41", "#116834", "#054f23"]);	
 		
 		var projection = d3.geo.albersUsa().scale(1200).translate([500, 280]);;
@@ -205,7 +267,7 @@
         //starter = caption.html();
 
         function showCountyData(d, i){
-        	console.log(d.id);
+        	//console.log(d.id);
         	//console.log(d.id.slice(0,2) + " as " + d.id.slice(2,5) );
         	countyClickData(d.id.slice(0,2), d.id.slice(2,5))
         }
@@ -244,31 +306,197 @@
 		getJsonFromURL();
 	}
 
+
 	function countyClickData(statId, countyId){
 		//	B01003_001E Total Population
 		//	B19013_001E Median house hold income
 		//	B19301_001E Per Capita Income
-		console.log(statId + " " + countyId);
-
-		var countyDataURL = "http://api.census.gov/data/2015/acs1?get=NAME,B01003_001E,B19013_001E,B19301_001E&for=county:*&key=" + KEY;
+		var countyDataURL = "http://api.census.gov/data/2015/acs1?get=NAME,B01003_001E,B19013_001E,B19301_001E&for=county:" + countyId +"&in=state:" + statId + "&key=" + KEY;
+		$("#loading").css("display", "block");
+		console.log(countyDataURL);
 		$.getJSON( countyDataURL, function(apidata) {
-			APIData = apidata;
-			console.log(APIData);
-			for(j=1;j<APIData.length; j++){ // j is for APIData's length
-					if(APIData[j][4] == statId && APIData[j][5] == countyId){
-						console.log(APIData[j][1] + " " + APIData[j][2] + " " + APIData[j][3]);
-						var totalPopId = d3.select("#totalPop");
-						var medIncomeId = d3.select("#medianIncome");
-						var capIncomeId = d3.select("#capitaIncome");
-						totalPopId.html("Total Population of County: " + APIData[j][1]);
-						medIncomeId.html("Median Income of County: " + APIData[j][2]);
-						capIncomeId.html("Per Capita Income of County: " + APIData[j][3]);
-					}
-				}
+			var totalPopId = d3.select("#totalPop");
+			var medIncomeId = d3.select("#medianIncome");
+			var capIncomeId = d3.select("#capitaIncome");
+			if(apidata){
+				totalPopId.html("Total Population of "+ apidata[1][0] +":" + apidata[1][1]);
+				medIncomeId.html("Median Income of "  + apidata[1][0] +":" + apidata[1][2]);
+				capIncomeId.html("Per Capita Income of " +apidata[1][0] +":" + apidata[1][3]);	
+			}else{
+				totalPopId.html("No data for this county");
+				medIncomeId.html("No data for this county");
+				capIncomeId.html("No data for this county");	
+			}
+			
+			countyDonutChart(statId, countyId);
+			drawBarChart(statId, countyId);
 		});
 	}
+
+	function countyDonutChart(statId, countyId){
+
+		var countyDataURL = "http://api.census.gov/data/2015/acs1?get=NAME,B01002_002E,B01002_003E,B19301_001E&for=county:" + countyId +"&in=state:" + statId + "&key=" + KEY;
+
+		var width = 960,
+	    height = 500,
+	    radius = Math.min(width, height) / 2;
+
+		var color = d3.scale.ordinal()
+	    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+		var arc = d3.svg.arc()
+		    .outerRadius(radius - 10)
+		    .innerRadius(radius - 70);
+
+		var pie = d3.layout.pie()
+		    .sort(null)
+		    .value(function(d) { return d.population; });
+
+		var svg = d3.select("countyDonutSvg").append("svg")
+		    .attr("width", width)
+		    .attr("height", height)
+		  .append("g")
+		    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+		d3.csv("data.csv", type, function(error, data) {
+		  if (error) throw error;
+
+		  var g = svg.selectAll(".arc")
+		      .data(pie(data))
+		    .enter().append("g")
+		      .attr("class", "arc");
+
+		  g.append("path")
+		      .attr("d", arc)
+		      .style("fill", function(d) { return color(d.data.age); });
+
+		  g.append("text")
+		      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+		      .attr("dy", ".35em")
+		      .text(function(d) { return d.data.age; });
+	});
+
+	function type(d) {
+	  d.population = +d.population;
+	  return d;
+	}
+	}
+
+
+
+	 function drawBarChart(statId,countyId ){
+     //http://codepen.io/pyche/pen/Bmzds
+
+				var countyMedianAgeBarURL = "http://api.census.gov/data/2015/acs1?get=NAME,B01002_001E,B01002_002E,B01002_003E&for=county:" + countyId +"&in=state:" + statId + "&key=" + KEY;
+
+
+				d3.select("#chart").selectAll('g').remove();
+				$.getJSON( countyMedianAgeBarURL, function(apidata) {
+					var data = [
+					  ["Total",2312],
+					  ["Male",674], 
+					  ["Female", 994]
+					];
+					console.log(apidata);
+					console.log(apidata[1][2]);
+					data[0][1] = apidata[1][1];
+					data[1][1] = apidata[1][2];
+					data[2][1] = apidata[1][3];
+					console.log(data);
+
+					var chart = document.getElementById("chart"),
+				    axisMargin = 20,
+				    margin = 20,
+				    valueMargin = 4,
+				    width = chart.offsetWidth,
+				    height = chart.offsetHeight,
+				    barHeight = (height-axisMargin-margin*2)* 0.4/data.length,
+				    barPadding = (height-axisMargin-margin*2)*0.6/data.length,
+				    data, bar, svg, scale, xAxis, labelWidth = 0;
+
+				max = d3.max(data.map(function(i){ 
+				  return i[1];
+				}));
+
+				svg = d3.select(chart)
+				  .append("svg")
+				  .attr("width", width)
+				  .attr("height", 400);
+
+
+				bar = svg.selectAll("g")
+				  .data(data)
+				  .enter()
+				  .append("g");
+
+				bar.attr("class", "bar")
+				  .attr("cx",0)
+				  .attr("transform", function(d, i) { 
+				     return "translate(" + margin + "," + (i * (barHeight + barPadding) + barPadding) + ")";
+				  });
+
+				bar.append("text")
+				  .attr("class", "label")
+				  .attr("y", barHeight / 2)
+				  .attr("dy", ".35em") //vertical align middle
+				  .text(function(d){
+				    return d[0];
+				  }).each(function() {
+				    labelWidth = Math.ceil(Math.max(labelWidth, this.getBBox().width));
+				  });
+
+				scale = d3.scale.linear()
+				  .domain([0, max])
+				  .range([0, width - margin*2 - labelWidth]);
+
+				xAxis = d3.svg.axis()
+				  .scale(scale)
+				  .tickSize(-height + 2*margin + axisMargin)
+				  .orient("bottom");
+
+				bar.append("rect")
+				  .attr("transform", "translate("+labelWidth+", 0)")
+				  .attr("height", barHeight)
+				  .attr("width", function(d){
+				    return scale(d[1]);
+				  });
+
+				bar.append("text")
+				  .attr("class", "value")
+				  .attr("y", barHeight / 2)
+				  .attr("dx", -valueMargin + labelWidth) //margin right
+				  .attr("dy", ".35em") //vertical align middle
+				  .attr("text-anchor", "end")
+				  .text(function(d){
+				    return d[1];
+				  })
+				 .attr("x", function(d){
+				    var width = this.getBBox().width;
+				    return Math.max(width + valueMargin, scale(d[1]));
+				  });
+
+				svg.insert("g",":first-child")
+				 .attr("class", "axis")
+				 .attr("transform", "translate(" + (margin + labelWidth) + ","+ (height - axisMargin - margin)+")")
+				 .call(xAxis);
+
+				});
+
+				
+              }//for drawBarChart ends
+
+
 	</script>
 
 	</article>
 </body>
 </html>
+
+<!-- 
+
+Todo:
+min max of usmap county level
+usmap should change according to the variable seelcted from dropdown
+
+
+ -->
