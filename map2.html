@@ -10,6 +10,7 @@
 		<script src="js/legend.js" type="text/javascript"></script>
 		<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 		<script src="http://d3js.org/colorbrewer.v1.js" type="text/javascript"></script>
+		<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
 		<style type="text/css">
 	
 		.counties path {
@@ -23,43 +24,29 @@
 		  stroke-width: 1px;
 		  fill: none;
 		}
-/*		.counties path:hover {
-		  fill: Steelblue;
-		}*/
-		.loader{
-			display: none;
-		}
 
-		.arc text {
-		  font: 10px sans-serif;
-		  text-anchor: middle;
-		}
-
-		.arc path {
-		  stroke: #fff;
-		}
 
 		.widget {
 		  display: inline-block;
 		  background: white;
 		}
-		.axis path{
+		/*.axis path{
 			fill: none;
-		}
-		.tick line {
+		}*/
+/*		.tick line {
 		    stroke-width: 1;
 		    stroke: rgba(0,0,0,0.1);
 		  }
-
-		.axis--x path {
+*/
+/*		.axis--x path {
 		  display: none;
-		}
+		}*/
 
-		.tick text {
+/*		.tick text {
 			fill: black;
 			font-size: 11px;
 		}
-
+*/
 		.legend {
 		 padding: 1.5em 0 0 1.5em;
 		}
@@ -78,6 +65,68 @@
 		 padding-left: 0;
 		 padding-right: 0;
 		}
+
+
+		/*scatter*/
+		              #tooltip {
+                position: absolute;
+                width: auto;
+                height: auto;
+                background-color: white;
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+                -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                pointer-events: none;
+              }
+              #tooltip.hidden {
+                display: none;
+                }
+              #tooltip p {
+                margin: 5px;
+                padding: 2px;
+                font-family: sans-serif;
+                font-size: 16px;
+              }
+
+		/*scatter ends*/
+
+
+		/*tooltip*/
+
+		.d3-tip {
+line-height: 1;
+font-weight: bold;
+padding: 12px;
+background: rgba(0, 0, 0, 0.8);
+color: #fff;
+border-radius: 2px;
+}
+/* Creates a small triangle extender for the tooltip */
+
+.d3-tip:after {
+box-sizing: border-box;
+display: inline;
+font-size: 10px;
+width: 100%;
+line-height: 1;
+color: rgba(0, 0, 0, 0.8);
+content: "\25BC";
+position: absolute;
+text-align: center;
+}
+/* Style northward tooltips differently */
+
+.d3-tip.n:after {
+margin: -1px 0 0 0;
+top: 100%;
+left: 0;
+}
+
+/*tooltip ends*/
+
 
 		</style>
 	</head>
@@ -171,7 +220,126 @@
 	</div>
 
 	<div>
-		<svg id="nativityCircles"></svg>
+	<select id="s1" onchange="variableScatterPlotData()">
+	   <option value="B01003_001E">Total Population within the locality</option>
+	   <option value="B19013_001E">Median Household Income</option>
+	   <option value="B19301_001E">Per Capita Income</option>
+	   <optgroup label="Age distribution broken down by sex">
+	   		<optgroup label="Male">
+	   			<option value="B01001_003E">Under 5 Years</option>
+	   			<option value="B01001_004E">5 to 9 Years</option>
+	   			<option value="B01001_005E">10 to 14 Years</option>
+	   			<option value="B01001_006E">15 to 17 Years</option>
+	   			<option value="B01001_007E">18 and 19 Years</option>
+	   			<option value="B01001_008E">20 Years</option>
+	   			<option value="B01001_009E">21 Years</option>
+	   			<option value="B01001_010E">22 to 24 Years</option>
+	   			<option value="B01001_011E">25 to 29 Years</option>
+	   			<option value="B01001_012E">30 to 34 Years</option>
+	   			<option value="B01001_013E">35 to 39 Years</option>
+	   			<option value="B01001_014E">40 to 44 Years</option>
+	   			<option value="B01001_015E">45 to 49 Years</option>
+	   			<option value="B01001_016E">50 to 54 Years</option>
+	   			<option value="B01001_017E">55 to 59 Years</option>
+	   			<option value="B01001_018E">60 and 61 Years</option>
+	   			<option value="B01001_019E">62 to 64 Years</option>
+	   			<option value="B01001_020E">65 and 66 Years</option>
+	   			<option value="B01001_021E">67 to 69 Years</option>
+	   			<option value="B01001_022E">70 to 74 Years</option>
+	   			<option value="B01001_023E">75 to 79 Years</option>
+	   			<option value="B01001_024E">80 to 84 Years</option>
+	   			<option value="B01001_025E">85 Years and over</option>
+	   		</optgroup>
+	   		<optgroup label="Female">
+	   			<option value="B01001_027E">Under 5 Years</option>
+	   			<option value="B01001_028E">5 to 9 Years</option>
+	   			<option value="B01001_029E">10 to 14 Years</option>
+	   			<option value="B01001_030E">15 to 17 Years</option>
+	   			<option value="B01001_031E">18 and 19 Years</option>
+	   			<option value="B01001_032E">20 Years</option>
+	   			<option value="B01001_033E">21 Years</option>
+	   			<option value="B01001_034E">22 to 24 Years</option>
+	   			<option value="B01001_035E">25 to 29 Years</option>
+	   			<option value="B01001_036E">30 to 34 Years</option>
+	   			<option value="B01001_037E">35 to 39 Years</option>
+	   			<option value="B01001_038E">40 to 44 Years</option>
+	   			<option value="B01001_039E">45 to 49 Years</option>
+	   			<option value="B01001_040E">50 to 54 Years</option>
+	   			<option value="B01001_041E">55 to 59 Years</option>
+	   			<option value="B01001_042E">60 and 61 Years</option>
+	   			<option value="B01001_043E">62 to 64 Years</option>
+	   			<option value="B01001_044E">65 and 66 Years</option>
+	   			<option value="B01001_045E">67 to 69 Years</option>
+	   			<option value="B01001_046E">70 to 74 Years</option>
+	   			<option value="B01001_047E">75 to 79 Years</option>
+	   			<option value="B01001_048E">80 to 84 Years</option>
+	   			<option value="B01001_049E">85 Years and over</option>
+	   		</optgroup>                        
+	   </optgroup>
+	</select>
+	<select id="s2" onchange="variableScatterPlotData()">
+	   <option value="B01003_001E">Total Population within the locality</option>
+	   <option value="B19013_001E">Median Household Income</option>
+	   <option value="B19301_001E">Per Capita Income</option>
+	   <optgroup label="Age distribution broken down by sex">
+	   		<optgroup label="Male">
+	   			<option value="B01001_003E">Under 5 Years</option>
+	   			<option value="B01001_004E">5 to 9 Years</option>
+	   			<option value="B01001_005E">10 to 14 Years</option>
+	   			<option value="B01001_006E">15 to 17 Years</option>
+	   			<option value="B01001_007E">18 and 19 Years</option>
+	   			<option value="B01001_008E">20 Years</option>
+	   			<option value="B01001_009E">21 Years</option>
+	   			<option value="B01001_010E">22 to 24 Years</option>
+	   			<option value="B01001_011E">25 to 29 Years</option>
+	   			<option value="B01001_012E">30 to 34 Years</option>
+	   			<option value="B01001_013E">35 to 39 Years</option>
+	   			<option value="B01001_014E">40 to 44 Years</option>
+	   			<option value="B01001_015E">45 to 49 Years</option>
+	   			<option value="B01001_016E">50 to 54 Years</option>
+	   			<option value="B01001_017E">55 to 59 Years</option>
+	   			<option value="B01001_018E">60 and 61 Years</option>
+	   			<option value="B01001_019E">62 to 64 Years</option>
+	   			<option value="B01001_020E">65 and 66 Years</option>
+	   			<option value="B01001_021E">67 to 69 Years</option>
+	   			<option value="B01001_022E">70 to 74 Years</option>
+	   			<option value="B01001_023E">75 to 79 Years</option>
+	   			<option value="B01001_024E">80 to 84 Years</option>
+	   			<option value="B01001_025E">85 Years and over</option>
+	   		</optgroup>
+	   		<optgroup label="Female">
+	   			<option value="B01001_027E">Under 5 Years</option>
+	   			<option value="B01001_028E">5 to 9 Years</option>
+	   			<option value="B01001_029E">10 to 14 Years</option>
+	   			<option value="B01001_030E">15 to 17 Years</option>
+	   			<option value="B01001_031E">18 and 19 Years</option>
+	   			<option value="B01001_032E">20 Years</option>
+	   			<option value="B01001_033E">21 Years</option>
+	   			<option value="B01001_034E">22 to 24 Years</option>
+	   			<option value="B01001_035E">25 to 29 Years</option>
+	   			<option value="B01001_036E">30 to 34 Years</option>
+	   			<option value="B01001_037E">35 to 39 Years</option>
+	   			<option value="B01001_038E">40 to 44 Years</option>
+	   			<option value="B01001_039E">45 to 49 Years</option>
+	   			<option value="B01001_040E">50 to 54 Years</option>
+	   			<option value="B01001_041E">55 to 59 Years</option>
+	   			<option value="B01001_042E">60 and 61 Years</option>
+	   			<option value="B01001_043E">62 to 64 Years</option>
+	   			<option value="B01001_044E">65 and 66 Years</option>
+	   			<option value="B01001_045E">67 to 69 Years</option>
+	   			<option value="B01001_046E">70 to 74 Years</option>
+	   			<option value="B01001_047E">75 to 79 Years</option>
+	   			<option value="B01001_048E">80 to 84 Years</option>
+	   			<option value="B01001_049E">85 Years and over</option>
+	   		</optgroup>                        
+	   </optgroup>
+	</select>
+	<br>
+	<svg id="svgScatter" style="width:960px;height:600px;"></svg>
+	<text id='scatterlabel' x='90' y='70'></text>
+    <div id="tooltip" class="hidden">
+      <p><span id="value">100</span></p>
+    </div>
 	</div>
 
 
@@ -185,6 +353,9 @@
 	var selectVariable = document.getElementById('variableDrowpDown');
 	getJsonFromURL();
 	var countyData;
+	var s1 = document.getElementById('s1');
+  	var s2 = document.getElementById('s2');
+	variableScatterPlotData();
 
 	function getJsonFromURL(){
 		var dataArray = [];
@@ -372,11 +543,10 @@
 				medIncomeId.html("No data for this county");
 				capIncomeId.html("No data for this county");	
 			}
-			
-		
+
 			makePovertyBarData(statId, countyId);
-			drawNativityScatterPlot(statId,countyId)
 			timeTravelBarGraphDataPrepare( statId, countyId)
+
 		});
 	}
 
@@ -498,77 +668,18 @@
 				
       }//for drawBarChart ends
 
+      function timeTravelBarGraphDataPrepare( statId, countyId){
+      	var timeTrabelBarURL = "http://api.census.gov/data/2015/acs1?get=NAME,B08303_002E,B08303_003E,B08303_004E,B08303_005E,B08303_006E,B08303_007E,B08303_008E,B08303_009E,B08303_010E,B08303_011E,B08303_012E,B08303_013E&for=county:" + countyId +"&in=state:" + statId + "&key=" + KEY;
+		var timeTravelValues = [];
+		$.getJSON( timeTrabelBarURL, function(apidata) {
+			for(var i=0; i<12;i++){
+				timeTravelValues.push(parseInt(apidata[1][i+1]));
+			}
+			timeTravelBarGraph(timeTravelValues);
 
-      function drawBirthByNativityCircleChart(statId,countyId ){
+		});
 
-
-	    var width = 960,
-	    height = 500;
-
-		var x = d3.scale.ordinal()
-		    .domain([0, 1, 2])
-		    .rangePoints([0, width], 1);
-
-		var svg = d3.select("body").append("svg")
-		    .attr("width", width)
-		    .attr("height", height);
-
-		var circle = svg.selectAll("circle")
-		    .data([0, 1])
-		  .enter().append("circle")
-		    .attr("r", height / 4)
-		    .attr("cx", x)
-		    .attr("cy", height / 2);
-
-		setTimeout(function() {
-		  circle = circle.data([1, 2], function(d) { return d; });
-
-		  // Since this is created before enter.append, it only applies to updating nodes.
-		  circle.transition()
-		      .duration(750)
-		      .attr("r", height / 3)
-		      .style("fill", "orange");
-
-		  circle.enter().append("circle")
-		      .attr("r", height / 4)
-		      .attr("cx", x)
-		      .attr("cy", height / 2)
-		      .style("fill", "green");
-
-		  circle.exit().transition()
-		      .duration(750)
-		      .style("fill", "red")
-		      .attr("r", 1e-6)
-		      .remove();
-
-		}, 1000);
       }
-
-       function drawNativityScatterPlot(statId,countyId){
-
-       		var nativityURL = "http://api.census.gov/data/2015/acs1?get=NAME,C05002_003E,C05002_004E,C05002_005E,C05002_006E,C05002_007E,C05002_008E&for=county:" + countyId +"&in=state:" + statId + "&key=" + KEY;
-       		var nativityArray = [];
-			d3.select("#nativityCircles").remove();
-			$.getJSON( nativityURL, function(apidata) {
-				for(var i=1;i<7;i++){
-					nativityArray.push(apidata[1][i]);
-				}//asd
-			});
-
-          }
-
-              function timeTravelBarGraphDataPrepare( statId, countyId){
-              	var timeTrabelBarURL = "http://api.census.gov/data/2015/acs1?get=NAME,B08303_002E,B08303_003E,B08303_004E,B08303_005E,B08303_006E,B08303_007E,B08303_008E,B08303_009E,B08303_010E,B08303_011E,B08303_012E,B08303_013E&for=county:" + countyId +"&in=state:" + statId + "&key=" + KEY;
-				var timeTravelValues = [];
-				$.getJSON( timeTrabelBarURL, function(apidata) {
-					for(var i=0; i<12;i++){
-						timeTravelValues.push(parseInt(apidata[1][i+1]));
-					}
-					timeTravelBarGraph(timeTravelValues);
-
-				});
-
-              }
 
         function timeTravelBarGraph(timeTravelValues){
 
@@ -645,6 +756,149 @@
 					
               }
 
+
+
+
+              function variableScatterPlotData(){
+              	var var1 = s1.options[s1.selectedIndex].value;
+              	var var2 = s2.options[s2.selectedIndex].value;
+              	var stateDataURL = "http://api.census.gov/data/2015/acs1?get=NAME,"+ var1 + ","+ var2 + "&for=state:*&key=" + KEY;
+      	      	//var timeTrabelBarURL = "http://api.census.gov/data/2015/acs1?get=NAME,"+ var1 + ","+ var2 + "&for=county:*&in=state:*&key=" + KEY;
+				var var1Values = [];
+				var var2Values = [];
+				var tempArray = [];
+				$.getJSON( stateDataURL, function(apidata) {
+					for(var i=1; i<apidata.length;i++){
+						var1Values.push(apidata[i][1]);
+						var2Values.push(apidata[i][2]);
+						//tempArray[i].push(apidata[i][1]);
+						//tempArray[i].push(apidata[i][2]);
+					}
+					//console.log(var1Values);
+					tempArray = $.map(var1Values, function(el, idx){
+						return [[el, var2Values[idx]]];
+					});
+					//console.log(tempArray);
+               		drawScatter(var1Values, var2Values, tempArray);
+				});
+
+              }
+
+              function drawScatter(data1, data2, tempArray){
+
+                d3.select("#svgScatter").selectAll('g').remove();
+               	var s1text = + s1.options[s1.selectedIndex].text;
+                var tip = d3.tip()
+					.attr('class', 'd3-tip')
+					.offset([-10, 0])
+					.html(function(d) {
+						return "<span style='color:white'>" + s1.options[s1.selectedIndex].text + ": " + d[0] + "<br/> " + s2.options[s2.selectedIndex].text + ": " + d[1] +"</span>";
+					});
+
+
+                var min1 = Math.min.apply(Math, data1);
+                var max1 = Math.max.apply(Math, data1);
+                var min2 = Math.min.apply(Math, data2);
+                var max2 = Math.max.apply(Math, data2);
+
+                //console.log(min1);
+                //console.log(max2);
+                var chartWidth = 900;
+                var chartHeight = 350;
+
+                var xScale = d3.scale.linear()
+                  .domain([min1, max1])
+                  .range([0, chartWidth]);
+
+                var yScale = d3.scale.linear()
+                  .domain([min2, max2])
+                  .range([chartHeight, 0]);
+
+                var group = d3.select("#svgScatter").append("g")
+                  .attr("transform", "translate(70, 100)");
+
+                    group.call(tip);
+
+                  group.selectAll("circle").data(tempArray)
+                  .enter()
+                  .append('circle')
+                  .attr("cx", function(d) { 
+                    return xScale(d[0]); })
+                  .attr("cy", function(d) { 
+                      return yScale(d[1]);})
+                  .attr("r", "10px")
+                  .attr("fill", function(d) {
+                    return "rgb(154,205,150)";})
+                  .attr("stroke", function(d){
+                      return "white";
+                  }).on('mouseover', tip.show)
+					.on('mouseout', tip.hide);
+
+
+                  /*.on("mouseover", function(d){
+                      var xPosition = parseFloat(d3.select(this).attr("x")) + 20;
+                      var yPosition = parseFloat(d3.select(this).attr("y")) + 13;
+                      d3.select("#tooltip")
+                      .style("left", xPosition + "px")
+                      .style("top", yPosition + "px")
+                      .select("#value")
+                      .html(s1.options[s1.selectedIndex].text + ": "+ d[1]+ "<br/> "+ s2.options[s2.selectedIndex].text+ " " + d[2]);
+                      //Show the tooltip
+                      d3.select("#tooltip").classed("hidden", false);
+
+                    }).on("mouseout", function(d){
+                      //Hide the tooltip
+                      d3.select("#tooltip").classed("hidden", true);
+                    });*/
+
+
+                // create x axis
+                var timeScale = d3.time.scale()
+                  .domain([0, max1])
+                  .range([0, chartWidth])
+
+                var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient('bottom');
+
+                        // create y axis
+                group.append("g")
+                  .attr('class', 'axis')
+                  .attr('transform', 'translate(0,' + chartHeight + ')')
+                  .call(xAxis);
+
+                var yAxis = d3.svg.axis()
+                  .scale(yScale)
+                  .orient('left');
+
+                group.append("g")
+                  .attr('class', 'axis')
+                  .attr('transform', 'translate(-2,0)')
+                  .call(yAxis);
+
+ /*               group.append("g")
+                  .append("text")
+                  .attr("transform", "rotate(-90)")
+                  .attr("y", 2)
+                  .attr("dy", ".71em")
+                  .style("text-anchor", "end")
+                  .style('font-size',"1px")
+                  .text("Energy Values ");
+
+                group.append("g")
+                  .append("text")
+                  .attr("transform","rotate(0)")
+                  .attr("x",800)
+                  .attr("y",215)
+                  .attr("dx",".71em")
+                  .style("text-anchor","end")
+                  .style('font-size',"9px")
+                  .text("Years");
+*/
+              }
+
+
+
               
 
 	</script>
@@ -663,15 +917,14 @@ Median household income - done
 per capita income - done
 income to povert level ratio - done
 Travel time to work	B08303001 - B08303013 - Line graph - Pushkar
-Place of birth by nativity	C05002001 - C05002008 - yet to decide
+Race	B02001001 - B02001010 - donre
+Living arrangement for adults (18 years and over)	B09021001 - B09021007 stack
+Poverty level by place of birth	B06012001 - B06012004  stack
 
-Race	B02001001 - B02001010 - yet to decide
-Living arrangement for adults (18 years and over)	B09021001 - B09021007 yet to decide
 
-Poverty level by place of birth	B06012001 - B06012004 
 Educational attainment by place of birth	B06009001 - B06009030
-
 Means of transportation to work	B08301001 - B08301021
+Place of birth by nativity	C05002001 - C05002008 - undone
 
 
 
