@@ -97,33 +97,36 @@
 		/*tooltip*/
 
 		.d3-tip {
-line-height: 1;
-font-weight: bold;
-padding: 12px;
-background: rgba(0, 0, 0, 0.8);
-color: #fff;
-border-radius: 2px;
-}
-/* Creates a small triangle extender for the tooltip */
+			line-height: 1;
+			font-weight: bold;
+			padding: 12px;
+			background: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			border-radius: 2px;
+		}
+		/* Creates a small triangle extender for the tooltip */
 
-.d3-tip:after {
-box-sizing: border-box;
-display: inline;
-font-size: 10px;
-width: 100%;
-line-height: 1;
-color: rgba(0, 0, 0, 0.8);
-content: "\25BC";
-position: absolute;
-text-align: center;
-}
-/* Style northward tooltips differently */
+		.d3-tip:after {
+			box-sizing: border-box;
+			display: inline;
+			font-size: 10px;
+			width: 100%;
+			line-height: 1;
+			color: rgba(0, 0, 0, 0.8);
+			content: "\25BC";
+			position: absolute;
+			text-align: center;
+		}
+		/* Style northward tooltips differently */
 
-.d3-tip.n:after {
-margin: -1px 0 0 0;
-top: 100%;
-left: 0;
-}
+		.d3-tip.n:after {
+			margin: -1px 0 0 0;
+			top: 100%;
+			left: 0;
+		}
+		.fillState{
+			border: 3px solid yellow;
+		}
 
 /*tooltip ends*/
 
@@ -199,6 +202,7 @@ left: 0;
 	<div >
 		<div id="legend" class="legend"></div>
 		<svg id="usMap" width="800" height="500"></svg>
+
 	</div>
 
  	<div class="widget">
@@ -395,7 +399,7 @@ left: 0;
 	
 	function drawMap(statesJSON, countiesJSON, dataArray){
 
-		//console.log(dataArray);
+		console.log(statesJSON.features[0].id);
 		//d3.select("#usMap").selectAll('g').remove();	
 		var color = d3.scale.log()
 	    .range(["hsl(62,100%,90%)", "hsl(228,30%,20%)"])
@@ -456,11 +460,13 @@ left: 0;
 
         counties.on("click", showCountyData);
 
+        //console.log(statesJSON.features[0].id);
         var states = map.append('g')
         .attr('class', 'states')
         .selectAll('path')
         .data(statesJSON.features)
         .enter().append('path')
+        .attr('id', function(d){return d.id})
         .attr('d', path);
     	var caption = d3.select('#caption');
         //starter = caption.html();
@@ -766,20 +772,25 @@ left: 0;
       	      	//var timeTrabelBarURL = "http://api.census.gov/data/2015/acs1?get=NAME,"+ var1 + ","+ var2 + "&for=county:*&in=state:*&key=" + KEY;
 				var var1Values = [];
 				var var2Values = [];
+				var stateValues = [];
 				var tempArray = [];
+				var allValues = [];
 				$.getJSON( stateDataURL, function(apidata) {
+					//console.log(apidata);
 					for(var i=1; i<apidata.length;i++){
 						var1Values.push(apidata[i][1]);
 						var2Values.push(apidata[i][2]);
-						//tempArray[i].push(apidata[i][1]);
-						//tempArray[i].push(apidata[i][2]);
+						stateValues.push(apidata[i][3]);
 					}
-					//console.log(var1Values);
 					tempArray = $.map(var1Values, function(el, idx){
 						return [[el, var2Values[idx]]];
 					});
-					//console.log(tempArray);
-               		drawScatter(var1Values, var2Values, tempArray);
+
+					for (var n = 0; n < var1Values.length; n++) {
+				        allValues.push([var1Values[n], var2Values[n], stateValues[n]]);
+				    }
+				    console.log(allValues);
+               		drawScatter(var1Values, var2Values, allValues);
 				});
 
               }
@@ -795,12 +806,11 @@ left: 0;
 						return "<span style='color:white'>" + s1.options[s1.selectedIndex].text + ": " + d[0] + "<br/> " + s2.options[s2.selectedIndex].text + ": " + d[1] +"</span>";
 					});
 
-
                 var min1 = Math.min.apply(Math, data1);
                 var max1 = Math.max.apply(Math, data1);
                 var min2 = Math.min.apply(Math, data2);
                 var max2 = Math.max.apply(Math, data2);
-
+               
                 //console.log(min1);
                 //console.log(max2);
                 var chartWidth = 900;
@@ -813,7 +823,7 @@ left: 0;
                 var yScale = d3.scale.linear()
                   .domain([min2, max2])
                   .range([chartHeight, 0]);
-
+ 			var  prevState = "01";
                 var group = d3.select("#svgScatter").append("g")
                   .attr("transform", "translate(70, 100)");
 
@@ -832,25 +842,21 @@ left: 0;
                   .attr("stroke", function(d){
                       return "white";
                   }).on('mouseover', tip.show)
-					.on('mouseout', tip.hide);
-
-
-                  /*.on("mouseover", function(d){
-                      var xPosition = parseFloat(d3.select(this).attr("x")) + 20;
-                      var yPosition = parseFloat(d3.select(this).attr("y")) + 13;
-                      d3.select("#tooltip")
-                      .style("left", xPosition + "px")
-                      .style("top", yPosition + "px")
-                      .select("#value")
-                      .html(s1.options[s1.selectedIndex].text + ": "+ d[1]+ "<br/> "+ s2.options[s2.selectedIndex].text+ " " + d[2]);
-                      //Show the tooltip
-                      d3.select("#tooltip").classed("hidden", false);
-
-                    }).on("mouseout", function(d){
-                      //Hide the tooltip
-                      d3.select("#tooltip").classed("hidden", true);
-                    });*/
-
+					.on('mouseout', tip.hide)
+					.on('click', function(d){
+						console.log(d[2]);
+						var prevStatesvg = document.getElementById(prevState);
+						console.log(prevStatesvg);
+						prevStatesvg.removeAttribute("fillState");
+						prevStatesvg.removeAttribute("style");
+						var statepath = document.getElementById(d[2]);
+						statepath.setAttribute("class", "fillState");
+						/*statepath.style.border="thick solid yellow";*/
+						statepath.style.stroke="red";
+						statepath.style.strokewidth="5"
+						prevState = d[2];
+						console.log(statepath);
+					}); 
 
                 // create x axis
                 var timeScale = d3.time.scale()
@@ -876,25 +882,6 @@ left: 0;
                   .attr('transform', 'translate(-2,0)')
                   .call(yAxis);
 
- /*               group.append("g")
-                  .append("text")
-                  .attr("transform", "rotate(-90)")
-                  .attr("y", 2)
-                  .attr("dy", ".71em")
-                  .style("text-anchor", "end")
-                  .style('font-size',"1px")
-                  .text("Energy Values ");
-
-                group.append("g")
-                  .append("text")
-                  .attr("transform","rotate(0)")
-                  .attr("x",800)
-                  .attr("y",215)
-                  .attr("dx",".71em")
-                  .style("text-anchor","end")
-                  .style('font-size',"9px")
-                  .text("Years");
-*/
               }
 
 
